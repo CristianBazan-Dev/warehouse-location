@@ -1,0 +1,39 @@
+{
+  "name": "challenge-aycron-exam-a",
+  "version": "1.0.0",
+  "description": "Technical exam A of Aycron",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CristianBazan-dev/challenge-aycron-exam-a.git"
+  },
+  "keywords": [
+    "exam",
+    "technical",
+    "challenge",
+    "forniture",
+    "company",
+    "warehouse",
+    "fullstack",
+    "web",
+    "app"
+  ],
+  "author": "Cristian Bazan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CristianBazan-dev/challenge-aycron-exam-a/issues"
+  },
+  "homepage": "https://github.com/CristianBazan-dev/challenge-aycron-exam-a#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.3.1"
+  },
+  "type": "module"
+}
