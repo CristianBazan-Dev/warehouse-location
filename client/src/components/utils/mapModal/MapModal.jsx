@@ -64,64 +64,25 @@ function MapModal({ id }) {
 
   useEffect(() => {
     // Setting origin
-    const origins = {
-      point: {
-        latitude: coords.lat,
-        longitude: coords.lon,
-      },
-    };
+ 
     // Setting destinations
-
     wares.map((ware) => {
       setDestinations({ ...destinations, ["point"]: ware.point });
     });
 
     // Setting calcRoute request
 
-    const options = {
-      departAt: new Date(),
-      routeType: "fastest",
-      traffic: "historical",
-      travelMode: "truck",
-      vehicleMaxSpeed: 90,
-      vehicleWeight: 12000,
-      vehicleAxleWeight: 4000,
-      vehicleLength: 13.6,
-      vehicleWidth: 2.42,
-      vehicleHeight: 2.4,
-      vehicleCommercial: true,
-      vehicleLoadType: ["otherHazmatExplosive", "otherHazmatGeneral"],
-      vehicleAdrTunnelRestrictionCode: "C",
-      avoid: ["unpavedRoads"],
-    };
 
     const sendingCalcRequest = async () => {
-      const calcRequest = {
-        origins: [origins],
-        destinations: [destinations],
-        options: options,
-      };
-
-      const calcArray = JSON.stringify(calcRequest);
-      console.log(calcArray);
+    
       const sendCalc = await axios.post(
-        `https://api.tomtom.com/routing/matrix/2/async?key=${api_key}`,
-        calcArray,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+       `https://api.tomtom.com/routing/1/calculateRoute/-32.5916447,-62.8342242:-32.5911,-62.82901/json?instructionsType=text&language=es-ES&vehicleHeading=90&sectionType=traffic&report=effectiveSettings&routeType=eco&traffic=true&avoid=unpavedRoads&travelMode=car&vehicleMaxSpeed=120&vehicleCommercial=false&vehicleEngineType=combustion&key=${api_key}`
       );
-      setJobId(sendCalc.data.jobId);
 
-      if (sendCalc.data.jobId) {
-        const obtainingCalc = await axios.get(
-          `https://api.tomtom.com/routing/matrix/2/async/${sendCalc.data.jobId}/result?key=${api_key}`
-        );
-        setDistanceData(obtainingCalc.data);
-        console.log(obtainingCalc.data);
-      }
+      console.log(sendCalc)
+      
+
+ 
     };
 
     sendingCalcRequest();
