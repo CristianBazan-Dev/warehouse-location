@@ -1,0 +1,18 @@
+.address-introduction {
+  display: flex;
+  flex-direction: column;
+}
+
+.address-introduction h2{
+  font-size: .7em;
+}
+
+.address form {
+  display: flex;
+}
+
+
+.address-introduction .coords form {
+  justify-content: center;
+  align-items: center;
+}

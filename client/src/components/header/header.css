@@ -1,0 +1,25 @@
+header{
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Montserrat', sans-serif;
+    z-index: 3;
+    align-items: center;
+}
+
+header ul{
+    display: flex ;
+}
+
+#logo {
+    fill: var(--light2);
+    width: 100%;
+    /* width: 400px;
+    height: 200px;
+    position: absolute;
+    top: 0; */
+}
+
+header ul li{
+    margin-left: 1em;
+    cursor: pointer;
+}

@@ -1,0 +1,65 @@
+.aboutUs h1 {
+  font-family: "Roboto", sans-serif;
+  font-size: 20em;
+  animation: changingColor 5s;
+}
+
+.aboutUs h2 {
+  font-size: 3em;
+  font-family: "Montserrat", sans-serif;
+}
+
+.aboutUs h3 {
+  font-size: 2em;
+  text-transform: none;
+}
+
+.aboutUs p {
+  font-size: 1em;
+  text-transform: none;
+}
+
+@keyframes changingColor {
+  0% {
+    color: var(--dark2);
+    filter: brightness(2);
+    filter: blur(10px);
+  }
+  100% {
+    color: var(--light);
+  }
+}
+
+.aboutUs .presentation {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  color: var(--dark2);
+  background: white;
+}
+
+.aboutUs .presentation h2 {
+  text-align: left;
+  padding: 0 1%;
+  font-weight: bold;
+}
+
+.aboutUs .description {
+  text-align: justify;
+  padding: 0 2em;
+}
+
+.aboutUs .description img {
+  width: 100%;
+}
+
+.aboutUs .description .icon {
+  fill: var(--dark2);
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2em auto;
+}
+.aboutUs .description p {
+  margin: 1em 0;
+}
