@@ -1,7 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalState } from "../GlobalState";
 
 function LocationAPI(props) {
+
   const [address, setAddress] = useState([]);
   const [currentPos, setCurrentPos] = useState(false);
   const [directionResults, setDirectionResults] = useState([]);
@@ -12,7 +13,13 @@ function LocationAPI(props) {
   });
   const [mapZoom, setMapZoom] = useState(0);
   const [origin, setOrigin] = useState([]); 
-  const [destinations, setDestinations] = useState([])
+  const [destinations, setDestinations] = useState({  })
+
+
+
+
+
+
   
   //   const gettingCoordinates = async () => {
   //   const res = await axios.get(
@@ -23,7 +30,7 @@ function LocationAPI(props) {
 
   // gettingCoordinates();
 
-  
+
 
   return {
     address: [address, setAddress],

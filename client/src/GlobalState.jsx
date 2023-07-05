@@ -29,6 +29,7 @@ export const DataProvider = ({ children }) => {
       };
       refreshToken();
     }
+    
   }, []);
 
   const state = {

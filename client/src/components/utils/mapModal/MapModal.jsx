@@ -5,7 +5,7 @@ import axios from "axios";
 
 import "@tomtom-international/web-sdk-maps/dist/maps.css";
 import * as tt from "@tomtom-international/web-sdk-maps";
-import * as ttapi from "@tomtom-international/web-sdk-services"
+import * as ttapi from "@tomtom-international/web-sdk-services";
 
 import { IoClose } from "react-icons/io5";
 import "./mapmodal.css";
@@ -33,61 +33,7 @@ function MapModal({ id }) {
   const [distanceData, setDistanceData] = useState([]);
   const api_key = state.api_key;
 
-  // useEffect(() => {
-  //   const gettingWare = async () => {
-  //     const res = await axios.get(`api/wares/${id}`);
-  //     setWare(res.data);
-  //   };
-  //   gettingWare();
-  // }, [id]);
-
-  const drawRoute = (geojson) => {
-    if(mapStl.getLayer('route')){
-      mapStl.removeLayer('route')
-      mapStl.removeSource('route')
-    }
-
-    mapStl.addLayer({
-      id: 'route', 
-      type: 'line', 
-      source: {
-        type: geojson, 
-        data: geojson
-      },
-      paint: {
-        'line-color': 'red',
-        'line-width': 6, 
-      }
-    })
-
-  }
-
   useEffect(() => {
-    // Setting origin
- 
-    // Setting destinations
-    wares.map((ware) => {
-      setDestinations({ ...destinations, ["point"]: ware.point });
-    });
-
-    // Setting calcRoute request
-
-
-    const sendingCalcRequest = async () => {
-    
-      const sendCalc = await axios.post(
-       `https://api.tomtom.com/routing/1/calculateRoute/-32.5916447,-62.8342242:-32.5911,-62.82901/json?instructionsType=text&language=es-ES&vehicleHeading=90&sectionType=traffic&report=effectiveSettings&routeType=eco&traffic=true&avoid=unpavedRoads&travelMode=car&vehicleMaxSpeed=120&vehicleCommercial=false&vehicleEngineType=combustion&key=${api_key}`
-      );
-
-      console.log(sendCalc)
-      
-
- 
-    };
-
-    sendingCalcRequest();
-
-
     // Setting map
     const mapStl = tt.map({
       key: api_key,
@@ -150,12 +96,78 @@ function MapModal({ id }) {
       addDeliveryMarker(e.lngLat, mapStl);
     });
 
+    // Drawing the destinations
+    const addDestinationsMarkers = (lngLat, map) => {
+      const element = document.createElement("div");
+      element.className = "marker-destinations";
+      new tt.Marker({
+        element: element,
+      })
+        .setLngLat(lngLat)
+        .addTo(map);
+    };
 
-    // Drawing the route 
+    addDestinationsMarkers(destinations, mapStl);
 
+    // Drawing the route
+    console.log(destinations);
+
+    function findFirstBuildingLayerId() {
+      var layers = mapStl.getStyle().layers;
+      for (var index in layers) {
+        if (layers[index].type === "fill-extrusion") {
+          return layers[index].id;
+        }
+      }
+
+      throw new Error(
+        "Map style does not contain any layer with fill-extrusion type."
+      );
+    }
+
+    mapStl.once("load", () => {
+      ttapi.services
+        .calculateRoute({
+          key: api_key,
+          // maxAlternatives: 2,
+          traffic: false,
+          locations: `${coords.lon},${coords.lat}:${destinations.lon},${destinations.lat}`,
+        })
+        .then((response) => {
+          var geojson = response.toGeoJson();
+          mapStl.addLayer(
+            {
+              id: "route",
+              type: "line",
+              source: {
+                type: "geojson",
+                data: geojson,
+              },
+              paint: {
+                "line-color": "#4a90e2",
+                "line-width": 8,
+              },
+            },
+            findFirstBuildingLayerId()
+          );
+
+          addMarker(geojson.features[0]);
+
+          var bounds = new tt.LngLatBounds();
+          geojson.features[0].geometry.coordinates.forEach(function (point) {
+            bounds.extend(tt.LngLat.convert(point));
+          });
+          mapStl.fitBounds(bounds, { duration: 0, padding: 50 });
+        });
+    });
+
+
+    
+
+  
 
     return () => mapStl.remove();
-  }, [coords.lat, coords.lon]);
+  }, []);
 
   return (
     <div
