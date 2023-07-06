@@ -18,9 +18,7 @@ function MapModal({ id }) {
   const mapElement = useRef();
 
   const [mapModal, setMapModal] = state.mapModal;
-  const [ware, setWare] = state.wares.ware;
   const [wares, setWares] = state.wares.wares;
-  const [waresLocation, setWaresLocation] = useState({});
 
   const [mapView, setMapView] = useState([]);
 
@@ -30,7 +28,10 @@ function MapModal({ id }) {
   const [origin, setOrigin] = state.locationAPI.origin;
   const [destinations, setDestinations] = state.locationAPI.destinations;
   const [jobId, setJobId] = useState("");
-  const [distanceData, setDistanceData] = useState([]);
+  const [distanceData, setDistanceData] = useState({
+    id: "",
+    length: "",
+  });
   const api_key = state.api_key;
 
   useEffect(() => {
@@ -46,6 +47,9 @@ function MapModal({ id }) {
       zoom: mapZoom,
     });
     setMapView(mapStl);
+    mapStl.addControl(new tt.FullscreenControl());
+    mapStl.addControl(new tt.NavigationControl());
+    const routeColors = ["#4a90e2", "#fcba03", "#fc0303", "#03fc84", "#7703fc"];
 
     // Adding position marker
     const element = document.createElement("div");
@@ -70,6 +74,7 @@ function MapModal({ id }) {
       marker.on("dragend", () => {
         const lngLat = marker.getLngLat();
         setCoords({ ...coords, lat: lngLat.lat, lon: lngLat.lng });
+        setMapZoom(14);
       });
 
       marker.setPopup(popup).togglePopup();
@@ -88,18 +93,14 @@ function MapModal({ id }) {
         .addTo(map);
     };
 
-    mapStl.on("click", (e) => {
-      setDestinations({
-        ...destinations,
-        point: { latitude: e.lngLat.lat, longitude: e.lngLat.lng },
-      });
-      addDeliveryMarker(e.lngLat, mapStl);
-    });
-
     // Drawing the destinations
-    const addDestinationsMarkers = (lngLat, map) => {
+    const addDestinationsMarkers = (lngLat, map, index) => {
       const element = document.createElement("div");
+      const innerElement = document.createElement("h3");
+      innerElement.className = "marker-name";
       element.className = "marker-destinations";
+      element.appendChild(innerElement);
+      innerElement.innerHTML = `${index}`;
       new tt.Marker({
         element: element,
       })
@@ -107,10 +108,7 @@ function MapModal({ id }) {
         .addTo(map);
     };
 
-    addDestinationsMarkers(destinations, mapStl);
-
     // Drawing the route
-    console.log(destinations);
 
     function findFirstBuildingLayerId() {
       var layers = mapStl.getStyle().layers;
@@ -119,56 +117,59 @@ function MapModal({ id }) {
           return layers[index].id;
         }
       }
-
       throw new Error(
         "Map style does not contain any layer with fill-extrusion type."
       );
     }
 
-    mapStl.once("load", () => {
-      ttapi.services
-        .calculateRoute({
-          key: api_key,
-          // maxAlternatives: 2,
-          traffic: false,
-          locations: `${coords.lon},${coords.lat}:${destinations.lon},${destinations.lat}`,
-        })
-        .then((response) => {
-          var geojson = response.toGeoJson();
-          mapStl.addLayer(
-            {
-              id: "route",
-              type: "line",
-              source: {
-                type: "geojson",
-                data: geojson,
-              },
-              paint: {
-                "line-color": "#4a90e2",
-                "line-width": 8,
-              },
-            },
-            findFirstBuildingLayerId()
-          );
+    wares.map((ware, index) => {
+      mapStl.once("load", () => {
+        ttapi.services
+          .calculateRoute({
+            key: api_key,
+            // maxAlternatives: 2,
+            traffic: false,
+            locations: `${coords.lon},${coords.lat}:${ware.point.longitude},${ware.point.latitude}`,
+          })
+          .then((response) => {
+            const geojson = response.toGeoJson();
+            const features = geojson.features;
 
-          addMarker(geojson.features[0]);
+            mapStl.addLayer(
+              {
+                id: `route${index + 1}`,
+                type: "line",
+                source: {
+                  type: "geojson",
+                  data: geojson,
+                },
+                paint: {
+                  "line-color": routeColors[index],
+                  "line-width": 8,
+                },
+              },
+              findFirstBuildingLayerId()
+            );
+            mapStl.on("mouseover", "route" + index);
 
-          var bounds = new tt.LngLatBounds();
-          geojson.features[0].geometry.coordinates.forEach(function (point) {
-            bounds.extend(tt.LngLat.convert(point));
+            addDestinationsMarkers(
+              { lat: ware.point.latitude, lon: ware.point.longitude },
+              mapStl,
+              index + 1
+            );
+
+            var bounds = new tt.LngLatBounds();
+            geojson.features[0].geometry.coordinates.forEach(function (point) {
+              bounds.extend(tt.LngLat.convert(point));
+            });
+            mapStl.fitBounds(bounds, { duration: 0, padding: 50 });
           });
-          mapStl.fitBounds(bounds, { duration: 0, padding: 50 });
-        });
+      });
     });
 
-
-    
-
-  
-
     return () => mapStl.remove();
-  }, []);
-
+  }, [coords.lat, coords.lon]);
+  console.log(distanceData);
   return (
     <div
       className={

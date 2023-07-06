@@ -6,19 +6,23 @@ function WarehousesAPI(props) {
   const state = useContext(GlobalState)
   const [wares, setWares] = useState([]);
   const [ware, setWare] = useState([]); 
-  const [destinations, setDestinations] = useState([]); 
+  const [waresLocation, setWaresLocation] = useState([]); 
 
   useEffect(() => {
     const getWares = async () => {
-      const res = await axios.get("api/wares");
+      const res = await axios.get("api/wares"); 
       setWares(res.data);
     };
     getWares();
   }, []);
 
+
+
+
   return {
     wares: [wares, setWares],
-    ware: [ware, setWare]
+    ware: [ware, setWare],
+    waresLocation: [waresLocation, setWaresLocation], 
   };
 }
 
