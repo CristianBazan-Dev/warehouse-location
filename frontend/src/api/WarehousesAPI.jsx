@@ -16,9 +16,6 @@ function WarehousesAPI(props) {
     getWares();
   }, []);
 
-
-
-
   return {
     wares: [wares, setWares],
     ware: [ware, setWare],
