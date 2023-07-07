@@ -1,0 +1,25 @@
+.contact-us {
+  display: flex;
+  align-items: center;
+  margin: 5em;
+}
+
+.contact-us .title-contact {
+  max-height: 500px;
+  height: 400px;
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1em;
+  position: absolute;
+}
+
+.contact-us .title-contact h2 {
+  font-size: 5em;
+  font-family: "Montserrat", sans-serif;
+  color: white;
+}
+
+.contact-us form {
+}

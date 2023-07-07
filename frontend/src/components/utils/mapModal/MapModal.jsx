@@ -177,7 +177,7 @@ function MapModal({ id }) {
       }
     >
       <IoClose
-        className="absolute top-0 right-5 z-20"
+        className="absolute top-0 right-10 z-50"
         onClick={() => {
           setMapModal(false);
         }}
