@@ -19,6 +19,10 @@
   text-transform: none;
 }
 
+.aboutUs .subtitle {
+  margin: 2em;
+}
+
 @keyframes changingColor {
   0% {
     color: var(--dark2);
@@ -39,7 +43,8 @@
 
 .aboutUs .presentation h2 {
   text-align: left;
-  padding: 0 1%;
+  padding: 2em 1em;
+  font-size: 2.5em;
   font-weight: bold;
 }
 
@@ -50,6 +55,7 @@
 
 .aboutUs .description img {
   width: 100%;
+  margin: 5em;
 }
 
 .aboutUs .description .icon {
@@ -60,6 +66,11 @@
   align-items: center;
   margin: 2em auto;
 }
+
+.aboutUs .description h3 {
+  margin: 1em 0;
+}
+
 .aboutUs .description p {
   margin: 1em 0;
 }

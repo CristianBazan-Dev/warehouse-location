@@ -5,7 +5,7 @@ import axios from "axios";
 
 import "@tomtom-international/web-sdk-maps/dist/maps.css";
 import * as tt from "@tomtom-international/web-sdk-maps";
-import * as ttapi from "@tomtom-international/web-sdk-services"
+import * as ttapi from "@tomtom-international/web-sdk-services";
 
 import { IoClose } from "react-icons/io5";
 import "./mapmodal.css";
@@ -18,9 +18,7 @@ function MapModal({ id }) {
   const mapElement = useRef();
 
   const [mapModal, setMapModal] = state.mapModal;
-  const [ware, setWare] = state.wares.ware;
   const [wares, setWares] = state.wares.wares;
-  const [waresLocation, setWaresLocation] = useState({});
 
   const [mapView, setMapView] = useState([]);
 
@@ -30,103 +28,13 @@ function MapModal({ id }) {
   const [origin, setOrigin] = state.locationAPI.origin;
   const [destinations, setDestinations] = state.locationAPI.destinations;
   const [jobId, setJobId] = useState("");
-  const [distanceData, setDistanceData] = useState([]);
+  const [distanceData, setDistanceData] = useState({
+    id: "",
+    length: "",
+  });
   const api_key = state.api_key;
 
-  // useEffect(() => {
-  //   const gettingWare = async () => {
-  //     const res = await axios.get(`api/wares/${id}`);
-  //     setWare(res.data);
-  //   };
-  //   gettingWare();
-  // }, [id]);
-
-  const drawRoute = (geojson) => {
-    if(mapStl.getLayer('route')){
-      mapStl.removeLayer('route')
-      mapStl.removeSource('route')
-    }
-
-    mapStl.addLayer({
-      id: 'route', 
-      type: 'line', 
-      source: {
-        type: geojson, 
-        data: geojson
-      },
-      paint: {
-        'line-color': 'red',
-        'line-width': 6, 
-      }
-    })
-
-  }
-
   useEffect(() => {
-    // Setting origin
-    const origins = {
-      point: {
-        latitude: coords.lat,
-        longitude: coords.lon,
-      },
-    };
-    // Setting destinations
-
-    wares.map((ware) => {
-      setDestinations({ ...destinations, ["point"]: ware.point });
-    });
-
-    // Setting calcRoute request
-
-    const options = {
-      departAt: new Date(),
-      routeType: "fastest",
-      traffic: "historical",
-      travelMode: "truck",
-      vehicleMaxSpeed: 90,
-      vehicleWeight: 12000,
-      vehicleAxleWeight: 4000,
-      vehicleLength: 13.6,
-      vehicleWidth: 2.42,
-      vehicleHeight: 2.4,
-      vehicleCommercial: true,
-      vehicleLoadType: ["otherHazmatExplosive", "otherHazmatGeneral"],
-      vehicleAdrTunnelRestrictionCode: "C",
-      avoid: ["unpavedRoads"],
-    };
-
-    const sendingCalcRequest = async () => {
-      const calcRequest = {
-        origins: [origins],
-        destinations: [destinations],
-        options: options,
-      };
-
-      const calcArray = JSON.stringify(calcRequest);
-      console.log(calcArray);
-      const sendCalc = await axios.post(
-        `https://api.tomtom.com/routing/matrix/2/async?key=${api_key}`,
-        calcArray,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setJobId(sendCalc.data.jobId);
-
-      if (sendCalc.data.jobId) {
-        const obtainingCalc = await axios.get(
-          `https://api.tomtom.com/routing/matrix/2/async/${sendCalc.data.jobId}/result?key=${api_key}`
-        );
-        setDistanceData(obtainingCalc.data);
-        console.log(obtainingCalc.data);
-      }
-    };
-
-    sendingCalcRequest();
-
-
     // Setting map
     const mapStl = tt.map({
       key: api_key,
@@ -139,6 +47,9 @@ function MapModal({ id }) {
       zoom: mapZoom,
     });
     setMapView(mapStl);
+    mapStl.addControl(new tt.FullscreenControl());
+    mapStl.addControl(new tt.NavigationControl());
+    const routeColors = ["#4a90e2", "#fcba03", "#fc0303", "#03fc84", "#7703fc"];
 
     // Adding position marker
     const element = document.createElement("div");
@@ -163,6 +74,7 @@ function MapModal({ id }) {
       marker.on("dragend", () => {
         const lngLat = marker.getLngLat();
         setCoords({ ...coords, lat: lngLat.lat, lon: lngLat.lng });
+        setMapZoom(14);
       });
 
       marker.setPopup(popup).togglePopup();
@@ -181,21 +93,83 @@ function MapModal({ id }) {
         .addTo(map);
     };
 
-    mapStl.on("click", (e) => {
-      setDestinations({
-        ...destinations,
-        point: { latitude: e.lngLat.lat, longitude: e.lngLat.lng },
+    // Drawing the destinations
+    const addDestinationsMarkers = (lngLat, map, index) => {
+      const element = document.createElement("div");
+      const innerElement = document.createElement("h3");
+      innerElement.className = "marker-name";
+      element.className = "marker-destinations";
+      element.appendChild(innerElement);
+      innerElement.innerHTML = `${index}`;
+      new tt.Marker({
+        element: element,
+      })
+        .setLngLat(lngLat)
+        .addTo(map);
+    };
+
+    // Drawing the route
+
+    function findFirstBuildingLayerId() {
+      var layers = mapStl.getStyle().layers;
+      for (var index in layers) {
+        if (layers[index].type === "fill-extrusion") {
+          return layers[index].id;
+        }
+      }
+      throw new Error(
+        "Map style does not contain any layer with fill-extrusion type."
+      );
+    }
+
+    wares.map((ware, index) => {
+      mapStl.once("load", () => {
+        ttapi.services
+          .calculateRoute({
+            key: api_key,
+            // maxAlternatives: 2,
+            traffic: false,
+            locations: `${coords.lon},${coords.lat}:${ware.point.longitude},${ware.point.latitude}`,
+          })
+          .then((response) => {
+            const geojson = response.toGeoJson();
+            const features = geojson.features;
+
+            mapStl.addLayer(
+              {
+                id: `route${index + 1}`,
+                type: "line",
+                source: {
+                  type: "geojson",
+                  data: geojson,
+                },
+                paint: {
+                  "line-color": routeColors[index],
+                  "line-width": 8,
+                },
+              },
+              findFirstBuildingLayerId()
+            );
+            mapStl.on("mouseover", "route" + index);
+
+            addDestinationsMarkers(
+              { lat: ware.point.latitude, lon: ware.point.longitude },
+              mapStl,
+              index + 1
+            );
+
+            var bounds = new tt.LngLatBounds();
+            geojson.features[0].geometry.coordinates.forEach(function (point) {
+              bounds.extend(tt.LngLat.convert(point));
+            });
+            mapStl.fitBounds(bounds, { duration: 0, padding: 50 });
+          });
       });
-      addDeliveryMarker(e.lngLat, mapStl);
     });
-
-
-    // Drawing the route 
-
 
     return () => mapStl.remove();
   }, [coords.lat, coords.lon]);
-
+  console.log(distanceData);
   return (
     <div
       className={
@@ -203,7 +177,7 @@ function MapModal({ id }) {
       }
     >
       <IoClose
-        className="absolute top-0 right-5 z-20"
+        className="absolute top-0 right-10 z-50"
         onClick={() => {
           setMapModal(false);
         }}

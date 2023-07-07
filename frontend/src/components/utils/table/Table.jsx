@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import axios from "axios";
 import { GlobalState } from "../../../GlobalState";
 import { IoTrash } from "react-icons/io5";
@@ -6,11 +6,12 @@ function Table(props) {
   const state = useContext(GlobalState);
   const [showModal, setShowModal] = state.showModal;
   const [mapModal, setMapModal] = state.mapModal;
-  const [wareSelected, setWareSelected] = state.wareSelected
+  const [wareSelected, setWareSelected] = state.wareSelected;
 
   const [wares, setWares] = state.wares.wares;
   const [isManag, setIsManag] = state.userAPI.isManag;
-  
+  const [destinations, setDestinations] = state.locationAPI.destinations;
+
   const deleteWare = async (id) => {
     const res = await axios.delete(`api/delete-ware/${id}`);
 
@@ -19,13 +20,21 @@ function Table(props) {
     }
   };
 
-  const showMapModal = async(id) => {
-    
-  }
-  
+  const showMapModal = async (id) => {};
+
+  useEffect(() => {
+    wares.map((ware) => {
+      setDestinations({
+        ...destinations,
+        lat: ware.point.latitude,
+        lon: ware.point.longitude,
+      });
+    });
+  }, []);
+
   return (
     <div
-      className={ 
+      className={
         showModal || mapModal
           ? " blur-sm transition ease-out relative overflow-x-auto"
           : "relative overflow-x-auto"
@@ -62,7 +71,7 @@ function Table(props) {
                 className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 cursor-pointer hover:bg-gray-600"
                 key={ware._id}
                 onClick={() => {
-                  setMapModal(!mapModal)
+                  setMapModal(!mapModal);
                   setWareSelected(ware._id);
                 }}
               >
@@ -83,23 +92,22 @@ function Table(props) {
                     </svg>
                     <span>Download</span>
                   </button>
-              
-              {isManag && (
-                  <button className="bg-red-400 hover:bg-red-700 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mr-2">
-                  <IoTrash
-                    onClick={async () => {
-                      if (
-                        !window.confirm(
-                          `Are you sure you want to delete ${ware.name}?`
-                        )
-                      )
-                        return;
-                      await deleteWare(ware._id);
-                    }}
-                  />
-                </button>
-              )}
 
+                  {isManag && (
+                    <button className="bg-red-400 hover:bg-red-700 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center mr-2">
+                      <IoTrash
+                        onClick={async () => {
+                          if (
+                            !window.confirm(
+                              `Are you sure you want to delete ${ware.name}?`
+                            )
+                          )
+                            return;
+                          await deleteWare(ware._id);
+                        }}
+                      />
+                    </button>
+                  )}
                 </td>
               </tr>
             );

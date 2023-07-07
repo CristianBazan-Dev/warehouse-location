@@ -36,3 +36,21 @@
   width: 22px;
   height: 22px;
 }
+
+
+.marker-destinations{
+  background-image: url("https://www.iconpacks.net/icons/2/free-store-icon-2017-thumb.png");
+  border-radius: 11px;
+  border: solid 3px blue;
+  background-size: cover;
+  width: 25px;
+  height: 25px;
+}
+
+
+.marker-name{
+  color: var(--dark2);
+  position: relative;
+  top: -1em;
+  font-size: 3em;
+}

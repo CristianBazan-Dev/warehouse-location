@@ -1,5 +1,6 @@
 footer{
-    background: var(--main);
+    background: #fff;
+    color: var(--dark2);
 }
 
 footer h1, footer h2{

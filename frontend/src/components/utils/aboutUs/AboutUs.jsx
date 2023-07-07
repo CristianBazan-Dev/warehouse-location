@@ -9,7 +9,7 @@ function AboutUs(props) {
     <div className="aboutUs">
       <h1>Who we are?</h1>
       <div className="subtitle">
-        <h2>Welcome to <Logo />!</h2>
+        <h2>Welcome to <Logo /></h2>
       </div>
 
       <div className="presentation">
